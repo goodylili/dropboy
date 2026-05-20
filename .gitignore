@@ -1,0 +1,33 @@
+/bin/
+/dist/
+/vendor/
+/dropboy
+*.test
+*.out
+*.log
+*.coverprofile
+coverage.*
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+.claude
+skills-lock.json
+.agents/
+
+# Frontend build artifacts.
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
+
+# Embedded frontend bundle is generated at build time. The directory is
+# kept (with a placeholder) so //go:embed compiles, but the bundle itself
+# should not be committed.
+backend/internal/server/assets/*
+!backend/internal/server/assets/placeholder.txt
+
+# goreleaser output
+backend/dist/

@@ -1,0 +1,36 @@
+# dropboy config — copy to ~/.dropboy/config.yaml and edit.
+# Run `dropboy init` to generate a fresh one interactively.
+
+# S3 bucket you own. Versioning + bucket-default SSE-KMS recommended.
+bucket: my-dropboy-bucket
+region: us-east-1
+
+# AWS shared profile to read credentials from. Empty = default chain.
+aws_profile: default
+
+# Stable per-machine identifier — used to namespace objects in S3
+# (dropboy/v1/<machine_id>/...). Defaults to the hostname.
+machine_id: my-laptop
+
+encryption:
+  scheme: aes-256-gcm
+  keyring: os   # `os` uses macOS Keychain; `file` falls back to an encrypted file
+
+folders:
+  - path: /Users/you/Documents
+    exclude:
+      - ".DS_Store"
+      - "*.tmp"
+  - path: /Users/you/Projects/notes
+
+limits:
+  max_upload_mbps: 0       # 0 = unlimited
+  max_concurrent: 4
+  delete_grace_hours: 24   # tombstone window before a remote delete is acted on
+
+poll:
+  remote_seconds: 60       # how often to list S3
+  full_scan_minutes: 15    # how often to walk local trees fully
+
+ui:
+  port: 7777               # loopback HTTP port for the local web UI

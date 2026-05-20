@@ -1,0 +1,2 @@
+Placeholder so //go:embed has something to embed before the frontend bundle
+is staged here by `make embed-frontend` (or the release workflow).

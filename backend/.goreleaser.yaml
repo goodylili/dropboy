@@ -1,0 +1,101 @@
+version: 2
+
+project_name: dropboy
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: dropboy
+    main: ./cmd/dropboy
+    binary: dropboy
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/goodylili/dropboy/internal/version.Version={{ .Version }}
+      - -X github.com/goodylili/dropboy/internal/version.Commit={{ .ShortCommit }}
+      - -X github.com/goodylili/dropboy/internal/version.Date={{ .Date }}
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+universal_binaries:
+  - id: dropboy-universal
+    replace: true
+    name_template: dropboy
+
+archives:
+  - id: default
+    formats: ["tar.gz"]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE*
+      - README.md
+      - ../README.md
+      - ../config.example.yaml
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^chore:"
+      - "^test:"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: dropboy
+    repository:
+      owner: goodylili
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/goodylili/dropboy
+    description: Self-hosted cloud drive on top of your own AWS S3 bucket.
+    license: MIT
+    install: |
+      bin.install "dropboy"
+    test: |
+      system "#{bin}/dropboy", "version"
+    service: |
+      run [opt_bin/"dropboy", "start", "--foreground"]
+      keep_alive true
+      log_path "#{var}/log/dropboy.log"
+      error_log_path "#{var}/log/dropboy.log"
+
+release:
+  github:
+    owner: goodylili
+    name: dropboy
+  prerelease: auto
+
+# ---------------------------------------------------------------------------
+# Optional: Apple Developer code signing + notarization.
+#
+# Uncomment and set the secrets below to ship a Gatekeeper-friendly build:
+#
+#   APPLE_DEVELOPER_ID_APPLICATION_CERT  base64 of .p12 (signing cert)
+#   APPLE_DEVELOPER_ID_APPLICATION_PWD   .p12 password
+#   APPLE_KEYCHAIN_PASSWORD              throwaway keychain password
+#   APPLE_ID                             Apple ID email
+#   APPLE_APP_SPECIFIC_PASSWORD          app-specific password from appleid.apple.com
+#   APPLE_TEAM_ID                        10-char team ID
+#
+# Then add `gon-config.json` (rcodesign or gon) and wire signing as a
+# `post:` build hook, plus a `notarize:` block.
+# Until you have an Apple Developer ID, leave this commented — the unsigned
+# binary still runs (with a Gatekeeper warning the user dismisses once).
+# ---------------------------------------------------------------------------
+
