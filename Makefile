@@ -1,12 +1,19 @@
 .PHONY: build build-go run dev test fmt vet tidy clean frontend-dev frontend-build frontend-export embed-frontend release-build install
 
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+COMMIT  ?= $(shell git rev-parse --short HEAD 2>/dev/null)
+DATE    ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+LDFLAGS := -X github.com/goodylili/dropboy/internal/version.Version=$(VERSION) \
+           -X github.com/goodylili/dropboy/internal/version.Commit=$(COMMIT) \
+           -X github.com/goodylili/dropboy/internal/version.Date=$(DATE)
+
 # Build dropboy with the latest UI bundle embedded.
 build: embed-frontend
-	cd backend && go build -o ../bin/dropboy ./cmd/dropboy
+	cd backend && go build -ldflags "$(LDFLAGS)" -o ../bin/dropboy ./cmd/dropboy
 
 # Build without rebuilding the frontend — useful when iterating on Go code.
 build-go:
-	cd backend && go build -o ../bin/dropboy ./cmd/dropboy
+	cd backend && go build -ldflags "$(LDFLAGS)" -o ../bin/dropboy ./cmd/dropboy
 
 run:
 	cd backend && go run ./cmd/dropboy
