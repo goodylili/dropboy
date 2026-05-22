@@ -1,0 +1,2 @@
+Placeholder so //go:embed all:assets has a directory to embed on a fresh
+clone. `make embed-frontend` overwrites this directory with the built UI.
