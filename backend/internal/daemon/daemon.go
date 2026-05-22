@@ -173,6 +173,28 @@ func (d *Daemon) Unlock(passphrase string, remember bool) error {
 	return nil
 }
 
+// UnlockWithRecovery brings the engine online using the recovery code printed
+// at init time. Used by `dropboy recover` when the passphrase has been lost.
+// The engine is unlocked for this session; subsequent daemon restarts still
+// require the original passphrase until the user sets a new one.
+func (d *Daemon) UnlockWithRecovery(code string) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.engine != nil {
+		return nil
+	}
+	master, err := d.loadMasterWithRecovery(code)
+	if err != nil {
+		return err
+	}
+	if err := d.initEngineWithMaster(d.runCtx, master); err != nil {
+		return err
+	}
+	d.locked.Store(false)
+	d.startReconcileLoop()
+	return nil
+}
+
 // Locked reports whether the engine is awaiting a passphrase.
 func (d *Daemon) Locked() bool { return d.locked.Load() }
 
@@ -191,6 +213,17 @@ func (d *Daemon) initEngine(ctx context.Context, opts Options, pass string) erro
 	if opts.NoS3 || d.cfg.Bucket == "" {
 		return errors.New("S3 not configured (run `dropboy init`)")
 	}
+	master, err := d.loadOrCreateMaster(pass)
+	if err != nil {
+		return err
+	}
+	return d.initEngineWithMaster(ctx, master)
+}
+
+func (d *Daemon) initEngineWithMaster(ctx context.Context, master []byte) error {
+	if d.cfg.Bucket == "" {
+		return errors.New("S3 not configured (run `dropboy init`)")
+	}
 	st, err := store.Open(filepath.Join(d.dataDir, "state.db"))
 	if err != nil {
 		return fmt.Errorf("state db: %w", err)
@@ -202,12 +235,6 @@ func (d *Daemon) initEngine(ctx context.Context, opts Options, pass string) erro
 		return fmt.Errorf("s3 client: %w", err)
 	}
 
-	master, err := d.loadOrCreateMaster(pass)
-	if err != nil {
-		_ = st.Close()
-		return err
-	}
-
 	d.store = st
 	d.s3c = s3c
 	d.master = master
@@ -216,16 +243,25 @@ func (d *Daemon) initEngine(ctx context.Context, opts Options, pass string) erro
 }
 
 func (d *Daemon) loadOrCreateMaster(pass string) ([]byte, error) {
-	if dcrypto.HasMasterKey(d.dataDir) {
-		if pass == "" {
-			return nil, errors.New("encryption passphrase required")
-		}
-		return dcrypto.LoadMasterKey(d.dataDir, pass)
+	if !dcrypto.HasMasterKey(d.dataDir) {
+		return nil, errors.New("encryption not initialized — run `dropboy init`")
 	}
 	if pass == "" {
-		return nil, errors.New("encryption passphrase required to initialize")
+		return nil, errors.New("encryption passphrase required")
 	}
-	return dcrypto.CreateMasterKey(d.dataDir, pass)
+	return dcrypto.LoadMasterKey(d.dataDir, pass)
+}
+
+// loadMasterWithRecovery unwraps the master key using the recovery code
+// rather than the passphrase. Same outcome — used by `dropboy recover`.
+func (d *Daemon) loadMasterWithRecovery(code string) ([]byte, error) {
+	if !dcrypto.HasRecoveryKey(d.dataDir) {
+		return nil, errors.New("no recovery key on disk — this install predates recovery codes")
+	}
+	if code == "" {
+		return nil, errors.New("recovery code required")
+	}
+	return dcrypto.LoadMasterKeyWithRecovery(d.dataDir, code)
 }
 
 func (d *Daemon) startReconcileLoop() {

@@ -46,6 +46,7 @@ type Engine interface {
 	SetPaused(bool)
 	Locked() bool
 	Unlock(passphrase string, remember bool) error
+	UnlockWithRecovery(code string) error
 	ForgetPassphrase() error
 }
 

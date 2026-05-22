@@ -67,6 +67,7 @@ Run with no arguments to enter the interactive shell.
 		newConflictsCmd(),
 		newDoctorCmd(),
 		newLogsCmd(),
+		newRecoverCmd(),
 		newUICmd(),
 		newVersionCmd(),
 	)

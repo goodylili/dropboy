@@ -542,6 +542,33 @@ func (s *Server) handleUnlock(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]bool{"unlocked": true, "remembered": p.Remember})
 }
 
+func (s *Server) handleRecover(w http.ResponseWriter, r *http.Request) {
+	var p struct {
+		Code string `json:"code"`
+	}
+	if err := readJSON(r, &p); err != nil {
+		writeJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if p.Code == "" {
+		writeJSONError(w, http.StatusBadRequest, "recovery code required")
+		return
+	}
+	s.mu.RLock()
+	eng := s.engine
+	s.mu.RUnlock()
+	if eng == nil {
+		writeJSONError(w, http.StatusServiceUnavailable, "daemon not ready")
+		return
+	}
+	if err := eng.UnlockWithRecovery(p.Code); err != nil {
+		writeJSONError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	s.events.publish(Event{Type: "unlocked", Time: time.Now().UTC()})
+	writeJSON(w, http.StatusOK, map[string]bool{"unlocked": true, "via_recovery": true})
+}
+
 func (s *Server) handleForgetPassphrase(w http.ResponseWriter, _ *http.Request) {
 	s.mu.RLock()
 	eng := s.engine

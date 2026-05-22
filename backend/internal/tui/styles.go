@@ -4,11 +4,11 @@ import "github.com/charmbracelet/lipgloss"
 
 // Vercel-inspired monochrome palette + a single accent.
 var (
-	accent      = lipgloss.Color("#D97757") // dropboy orange (Claude-ish)
+	accent      = lipgloss.Color("#22C55E") // dropboy green — file/folder themed
 	fg          = lipgloss.Color("#FAFAFA")
 	dim         = lipgloss.Color("#A1A1AA") // zinc-400
 	dimmer      = lipgloss.Color("#71717A") // zinc-500
-	border      = lipgloss.Color("#D97757") // orange border to match welcome box
+	border      = lipgloss.Color("#22C55E") // green border to match welcome box
 	successFg   = lipgloss.Color("#10B981")
 	warningFg   = lipgloss.Color("#F59E0B")
 	dangerFg    = lipgloss.Color("#EF4444")

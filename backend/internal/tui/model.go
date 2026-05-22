@@ -42,7 +42,7 @@ type model struct {
 
 func initialModel() model {
 	ti := textinput.New()
-	ti.Placeholder = "ask anything or type /help"
+	ti.Placeholder = "/help for commands"
 	ti.Prompt = ""
 	ti.Focus()
 	ti.CharLimit = 1024

@@ -27,6 +27,7 @@ func (s *Server) registerRoutes(mux *http.ServeMux) {
 	// /unlock and /forget-passphrase get an aggressive per-source rate limit
 	// to slow brute-force passphrase guesses.
 	api.Handle("POST /api/v1/unlock", s.rateLimit("unlock", s.unlockRL, http.HandlerFunc(s.handleUnlock)))
+	api.Handle("POST /api/v1/recover", s.rateLimit("recover", s.unlockRL, http.HandlerFunc(s.handleRecover)))
 	api.Handle("POST /api/v1/forget-passphrase", s.rateLimit("forget", s.unlockRL, http.HandlerFunc(s.handleForgetPassphrase)))
 
 	mux.Handle("/api/v1/", s.authMiddleware(api))

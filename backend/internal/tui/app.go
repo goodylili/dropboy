@@ -45,10 +45,11 @@ func leftPanel() string {
 	}
 
 	mascot := mascotStyle.Render(strings.Join([]string{
-		"   ___   ",
-		"  (o o)  ",
-		" ( >📦< ) ",
-		"  /   \\  ",
+		"  ______   ",
+		" /     /|  ",
+		"/_____/ |  ",
+		"|     | /  ",
+		"|_____|/   ",
 	}, "\n"))
 
 	header := sectionTitleStyle.Render("dropboy ") + subtitleStyle.Render("v"+version.String())
