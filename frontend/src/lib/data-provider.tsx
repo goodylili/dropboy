@@ -44,6 +44,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     captureTokenFromURL();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch from the dropboy daemon (external system).
     void load();
   }, [load]);
 

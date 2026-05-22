@@ -9,6 +9,7 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- mount flag to avoid hydration mismatch with next-themes.
   React.useEffect(() => setMounted(true), []);
 
   const isDark = mounted && resolvedTheme === "dark";

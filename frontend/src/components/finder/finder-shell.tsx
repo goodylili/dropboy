@@ -38,31 +38,17 @@ function sortFiles(files: FileNode[], sort: SortKey, ascending: boolean): FileNo
 export function FinderShell() {
   const { machines, trees, status, ready, error } = useData();
   const primary = machines[0]?.id ?? "";
-  const [history, setHistory] = React.useState<Loc[]>([{ machine: primary, path: "/" }]);
+  const [history, setHistory] = React.useState<Loc[]>([{ machine: "", path: "/" }]);
   const [historyIdx, setHistoryIdx] = React.useState(0);
 
-  // Seed the history once the first machine arrives.
-  React.useEffect(() => {
-    if (primary && history[0].machine === "") {
-      setHistory([{ machine: primary, path: "/" }]);
-      setHistoryIdx(0);
-    }
-  }, [primary, history]);
-
-  const current = history[historyIdx] ?? { machine: primary, path: "/" };
-
-  if (!ready) {
-    return <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">Connecting to dropboy daemon…</div>;
-  }
-  if (error) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2 p-8 text-center">
-        <p className="text-sm font-medium">Can't reach the dropboy daemon.</p>
-        <p className="max-w-md text-xs text-muted-foreground">{error}</p>
-        <p className="text-xs text-muted-foreground">Start it with <code>dropboy ui --open</code> and reload this page.</p>
-      </div>
-    );
-  }
+  const rawCurrent = history[historyIdx];
+  const current: Loc = React.useMemo(
+    () =>
+      rawCurrent?.machine
+        ? rawCurrent
+        : { machine: primary, path: rawCurrent?.path ?? "/" },
+    [rawCurrent, primary],
+  );
 
   const [view, setView] = React.useState<ViewMode>("columns");
   const [sort, setSort] = React.useState<SortKey>("name");
@@ -159,7 +145,7 @@ export function FinderShell() {
       });
     });
     return crumbs;
-  }, [current, navigate]);
+  }, [current, navigate, machines]);
 
   const openItem = React.useCallback(
     (file: FileNode) => {
@@ -226,6 +212,19 @@ export function FinderShell() {
     () => Object.values(trees).flatMap((t) => flatten(t)).filter((n) => n.kind !== "folder"),
     [trees],
   );
+
+  if (!ready) {
+    return <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">Connecting to dropboy daemon…</div>;
+  }
+  if (error) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-2 p-8 text-center">
+        <p className="text-sm font-medium">Can&apos;t reach the dropboy daemon.</p>
+        <p className="max-w-md text-xs text-muted-foreground">{error}</p>
+        <p className="text-xs text-muted-foreground">Start it with <code>dropboy ui --open</code> and reload this page.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full flex-col bg-background text-foreground">

@@ -63,6 +63,7 @@ function FoldersTab() {
   }, []);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the dropboy daemon (external system).
     void load();
   }, [load]);
 
@@ -139,6 +140,7 @@ function ConflictsTab() {
   }, []);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches from the dropboy daemon (external system).
     void load();
   }, [load]);
 
