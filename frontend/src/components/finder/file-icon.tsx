@@ -15,7 +15,9 @@ import {
 import type { FileKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const map: Record<FileKind, { Icon: React.ComponentType<{ className?: string }>; color: string }> = {
+type Entry = { Icon: React.ComponentType<{ className?: string }>; color: string };
+
+const map: Record<FileKind, Entry> = {
   folder: { Icon: Folder, color: "text-sky-500 dark:text-sky-400" },
   image: { Icon: FileImage, color: "text-violet-500 dark:text-violet-400" },
   video: { Icon: FileVideo, color: "text-pink-500 dark:text-pink-400" },
@@ -30,7 +32,9 @@ const map: Record<FileKind, { Icon: React.ComponentType<{ className?: string }>;
   binary: { Icon: FileIco, color: "text-zinc-500 dark:text-zinc-400" },
 };
 
+const fallback: Entry = { Icon: FileIco, color: "text-zinc-500 dark:text-zinc-400" };
+
 export function FileIcon({ kind, className }: { kind: FileKind; className?: string }) {
-  const { Icon, color } = map[kind];
+  const { Icon, color } = map[kind] ?? fallback;
   return <Icon className={cn(color, className)} />;
 }
