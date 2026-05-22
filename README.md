@@ -1,5 +1,7 @@
 # dropboy
 
+![dropboy interactive shell](docs/images/welcome.png)
+
 Self-hosted cloud drive on top of your own AWS S3 bucket. iCloud Drive for
 people who'd rather hold their own keys.
 

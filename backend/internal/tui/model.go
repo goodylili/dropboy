@@ -38,6 +38,7 @@ type model struct {
 	bandwidth   string
 	paused      bool
 	bucketLabel string
+	quit        bool // set by /exit /quit; checked in Update
 }
 
 func initialModel() model {
@@ -86,7 +87,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.pastCmds = append(m.pastCmds, line)
 			m.pastCursor = -1
-			return m.handleLine(line), nil
+			next := m.handleLine(line)
+			if next.quit {
+				return next, tea.Quit
+			}
+			return next, nil
 		case tea.KeyTab:
 			if m.suggest != "" {
 				m.input.SetValue(m.suggest)
@@ -144,12 +149,9 @@ func (m model) handleLine(line string) model {
 	args := fields[1:]
 
 	if name == "/exit" || name == "/quit" {
-		// signal quit via a sentinel; we can't return cmd from here so set flag.
-		m.history = append(m.history, historyLine{kind: lineInfo, text: "bye 👋"})
-		// quit handled by Update? We'll use a small hack: return quit on next Update.
-		// Simpler: trigger immediately via os.Exit on the caller side.
-		// We'll instead set a flag; handled by Update via separate path below.
-		// (See update.go quit handling.)
+		m.history = append(m.history, historyLine{kind: lineInfo, text: "bye"})
+		m.quit = true
+		return m
 	}
 	if name == "/clear" {
 		m.history = m.history[:0]
